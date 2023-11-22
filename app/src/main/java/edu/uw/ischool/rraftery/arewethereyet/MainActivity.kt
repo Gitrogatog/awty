@@ -6,16 +6,20 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.icu.util.Calendar
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.telephony.SmsManager
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 
-const val ALARM_ACTION = "edu.uw.ischool.newart.ALARM"
+const val ALARM_ACTION = "edu.uw.ischool.rraftery.ALARM"
 class MainActivity : AppCompatActivity() {
     var message : String = ""
     var phone : String = ""
@@ -86,11 +90,15 @@ class MainActivity : AppCompatActivity() {
     }
     fun repeatAlarm() {
         val activityThis = this
-
+//        val smsManager : SmsManager = SmsManager.getDefault()//getSystemService(SmsManager::class.java)
         if (receiver == null) {
             receiver = object : BroadcastReceiver() {
+                val sms:SmsManager = SmsManager.getDefault()
+                val phoneNum : String = phone
+                val messageText : String = message
                 override fun onReceive(context: Context?, intent: Intent?) {
-                    Toast.makeText(activityThis, "$phone: Are we there yet?", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(activityThis, "$phoneNum: Are we there yet?", Toast.LENGTH_SHORT).show()
+                    sms.sendTextMessage(phoneNum, null, messageText, null, null)
                 }
             }
             val filter = IntentFilter(ALARM_ACTION)
@@ -99,6 +107,7 @@ class MainActivity : AppCompatActivity() {
 
         // Create the PendingIntent
         val intent = Intent(ALARM_ACTION)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         repeatPing = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
 
